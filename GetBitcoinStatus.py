@@ -3,14 +3,9 @@ import time
 from datetime import datetime
 
 import jwt
-import hashlib
 import os
-import requests
 import uuid
 import requests
-from urllib.parse import urlencode, unquote
-import sqlite3
-from peewee import SqliteDatabase, Model, CharField, IntegerField
 
 server_url = "https://api.upbit.com/"
 
@@ -63,7 +58,7 @@ def SetMarketStatus(MarketID, korean_name, english_name):
     print(f"종목 ID: {MarketID}, 한글 이름: {korean_name}, 영어 이름: {english_name}")
 
     # URL to fetch the JSON data
-    url = f"https://api.upbit.com/v1/candles/minutes/5?market={MarketID}&count=10000"
+    url = f"https://api.upbit.com/v1/candles/minutes/5?market={MarketID}&count=1200"
     print(f"데이터를 가져올 URL: {url}")
 
     # Fetch the JSON data from the URL
@@ -92,7 +87,7 @@ def SetMarketStatus(MarketID, korean_name, english_name):
         filename = f"{folder_path}/{MarketID}_{current_date}.json"
         print(f"저장할 파일 이름: {filename}")
 
-        # If the file exists, load the existing data
+        # Load existing data if the file exists
         if os.path.exists(filename):
             with open(filename, 'r', encoding='utf-8') as f:
                 existing_data = json.load(f)
@@ -101,18 +96,26 @@ def SetMarketStatus(MarketID, korean_name, english_name):
             existing_data = []
             print("기존 데이터가 없습니다. 새로운 파일을 생성합니다.")
 
-        # Append new data to the existing data
-        updated_data = existing_data + new_data
+        # Filter out duplicate data
+        existing_timestamps = {entry['timestamp'] for entry in existing_data}
+        unique_new_data = [entry for entry in new_data if entry['timestamp'] not in existing_timestamps]
 
-        # Save the updated JSON data to the file
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(updated_data, f, ensure_ascii=False, indent=4)
+        if unique_new_data:
+            # Append new unique data to the existing data
+            updated_data = existing_data + unique_new_data
 
-        print(f"데이터가 성공적으로 {filename}에 업데이트되었습니다.")
-        time.sleep(0.1)
+            # Save the updated JSON data to the file
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(updated_data, f, ensure_ascii=False, indent=4)
+
+            print(f"새로운 데이터가 {filename}에 성공적으로 업데이트되었습니다.")
+        else:
+            print("추가할 새로운 데이터가 없습니다.")
+
+        time.sleep(1)
+
     else:
         print(f"데이터 요청 실패! 상태 코드: {response.status_code}")
-
 def TimeStampToDate(timestamp ) :
     # 타임스탬프를 밀리초 단위에서 초 단위로 변환
     timestamp_seconds = timestamp / 1000
