@@ -11,8 +11,10 @@ from urllib.parse import urlencode, unquote
 import sqlite3
 from peewee import SqliteDatabase, Model, CharField, IntegerField
 
-
 server_url = "https://api.upbit.com/"
+# 배열 정의
+TargetMarket = ["KRW-ETC" , "KRW-XRP" , "KRW-ETH"]
+
 
 MarketDB = SqliteDatabase('AutoTrading.db')
 # 모델 정의
@@ -26,14 +28,31 @@ class Market(Model):
 
     MarketHighPrice = CharField()
     MarketLowPrice = CharField()
-    MarketRSI = CharField()
+
+    MarketRSI14 = CharField()
+    MarketRSI20 = CharField()
+    MarketRSI50 = CharField()
+    MarketRSI100 = CharField()
+
+    class Meta:
+        database = MarketDB
+
+class MarketRSI(Model):
+    MarketKOR = CharField()
+    MarketID = CharField()
+    MarketENG = CharField()
+
+    MarketRSI14 = CharField()
+    MarketRSI20 = CharField()
+    MarketRSI50 = CharField()
+    MarketRSI100 = CharField()
 
     class Meta:
         database = MarketDB
 
 # 데이터베이스 연결 (해당 파일이 없으면 새로 생성)
 MarketDB.connect()
-MarketDB.create_tables([Market])
+MarketDB.create_tables([Market , MarketRSI])
 
 print("데이터 베이스 연결")
 
@@ -79,47 +98,63 @@ def GetCoinList() :
         if "KRW" not in row["market"]:
             continue
 
-        print("####################################################################################################")
-        MarketStatus = GetCoinTick(row["market"])[0]
+        if row["market"] in TargetMarket:
+            SetMarketStatus(row["market"] , row["korean_name"] , row["english_name"])
 
-        # RSI 계산을 위해 현재 시세 데이터 배열에 추가
-        MarketList_RSI = []
-        MarketList_RSI.append(float(MarketStatus["trade_price"]))
+def SetMarketStatus(MarketID , korean_name , english_name) :
+    print("####################################################################################################")
+    MarketStatus = GetCoinTick(MarketID)[0]
 
-        # Market 테이블에서 MarketID와 MarketTime이 최근순으로 정렬된 결과 중 상위 100개 선택
-        query = (Market
-                 .select()
-                 .where(Market.MarketID == row["market"])
-                 .order_by(Market.MarketTime.desc())
-                 .limit(100))
+    # RSI 계산을 위해 현재 시세 데이터 배열에 추가
+    MarketList_RSI = []
+    MarketList_RSI.append(float(MarketStatus["trade_price"]))
 
-        # 쿼리 결과를 순회하며 RSI 계산을 위한 가격 데이터 입력
-        for TradingData in query:
-            MarketList_RSI.append(float(TradingData.MarketPrice))
-
-        RSI = GetMarketRSI(MarketList_RSI , len(MarketList_RSI))
+    RSI14 = CalcRSI(MarketID , MarketList_RSI , 14)
+    RSI20 = CalcRSI(MarketID , MarketList_RSI , 20)
+    RSI50 = CalcRSI(MarketID , MarketList_RSI , 50)
+    RSI100 = CalcRSI(MarketID , MarketList_RSI , 100)
 
 
-        MarketData = {
-            "MarketKOR": row["korean_name"],
-            "MarketID": row["market"],
-            "MarketENG": row["english_name"],
+    MarketData = {
+        "MarketKOR": korean_name,
+        "MarketID": MarketID,
+        "MarketENG": english_name,
 
-            "MarketPrice": MarketStatus["trade_price"],
-            "MarketTime": TimeStampToDate(MarketStatus["trade_timestamp"]),
+        "MarketPrice": MarketStatus["trade_price"],
+        "MarketTime": TimeStampToDate(MarketStatus["trade_timestamp"]),
 
-            "MarketHighPrice": MarketStatus["high_price"],
-            "MarketLowPrice": MarketStatus["low_price"],
-            "MarketRSI": RSI
-        }
-        print(MarketData)
+        "MarketHighPrice": MarketStatus["high_price"],
+        "MarketLowPrice": MarketStatus["low_price"],
 
-        Market.create(**MarketData)
+        "MarketRSI14": RSI14,
+        "MarketRSI20": RSI20,
+        "MarketRSI50": RSI50,
+        "MarketRSI100": RSI100
+    }
+    print(MarketData)
+    Market.create(**MarketData)
 
-        print("####################################################################################################")
+    # 새로운 데이터를 삽입
+    query = MarketRSI.delete().where(MarketRSI.MarketID == MarketID)
+    query.execute()
+    MarketRSIData = {
+        "MarketKOR": korean_name,
+        "MarketID": MarketID,
+        "MarketENG": english_name,
 
-        # 0.1 초 동안 대기 , too many request를 피하기 위함
-        time.sleep(0.05)
+        "MarketRSI14": RSI14,
+        "MarketRSI20": RSI20,
+        "MarketRSI50": RSI50,
+        "MarketRSI100": RSI100
+    }
+    print(MarketRSIData)
+    MarketRSI.create(**MarketRSIData)
+
+    print("####################################################################################################")
+
+    # 0.1 초 동안 대기 , too many request를 피하기 위함
+    time.sleep(0.5)
+
 
 def GetCoinTick(CoinID) :
     import requests
@@ -142,6 +177,22 @@ def TimeStampToDate(timestamp ) :
     # 문자열로 변환하여 출력
     formatted_datetime = dt_object.strftime('%Y-%m-%d %H:%M:%S')
     return formatted_datetime
+
+
+def CalcRSI(MarketID , MarketList_RSI , window) :
+    # Market 테이블에서 MarketID와 MarketTime이 최근순으로 정렬된 결과 중 상위 100개 선택
+    query = (Market
+             .select()
+             .where(Market.MarketID == MarketID)
+             .order_by(Market.MarketTime.desc())
+             .limit(window))
+
+    # 쿼리 결과를 순회하며 RSI 계산을 위한 가격 데이터 입력
+    for TradingData in query:
+        MarketList_RSI.append(float(TradingData.MarketPrice))
+
+    RSI = GetMarketRSI(MarketList_RSI, len(MarketList_RSI))
+    return RSI
 
 def GetMarketRSI(prices, period=14) :
     """

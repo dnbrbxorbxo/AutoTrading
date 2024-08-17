@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e3fbc16c-f9ac-47cf-8532-75f11b874583" name="AI Server">
+        <fileTransfer accessType="SFTP" host="211.41.73.18" port="22" sshConfigId="fdd9382b-d796-4e37-80c1-9dd57b8a0819" sshConfig="root@211.41.73.18:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
