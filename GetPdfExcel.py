@@ -19,9 +19,10 @@ def extract_text_from_pdf(pdf_path):
 def parse_text_to_sections_and_paragraphs(text_data):
     """
     추출된 텍스트를 구조화된 섹션 및 문단으로 파싱하여 페이지 번호를 포함시킵니다.
+    날짜 형식의 문단은 섹션으로 간주되지 않도록 합니다.
     """
-    # 섹션 패턴 정의
-    section_pattern = re.compile(r'((?:IX|IV|V?I{0,3})\.\s+.*?|\d+\.\s+.*?|\d+\.【.*?】.*?)(?=\n|\Z)', re.DOTALL)
+    # 섹션 패턴 정의 (날짜 형식 yyyy.mm.dd 는 제외, 중간에 공백이 있을 수 있음)
+    section_pattern = re.compile(r'^(?!\d{4}\s*\.\s*\d{2}\s*\.\s*\d{2})((?:IX|IV|V?I{0,3})\.\s+.*?|\d+\.\s+.*?)(?=\n|\Z)', re.DOTALL)
 
     parsed_data = []
     paragraphs = text_data.split("\n")
@@ -77,6 +78,6 @@ for index, row in df.iterrows():
 parsed_df = pd.DataFrame(parsed_data, columns=['페이지 번호', '섹션', '내용'])
 
 # DataFrame을 엑셀 파일로 저장
-excel_path = './result.xlsx'
+excel_path = './PDF추출.xlsx'
 parsed_df.to_excel(excel_path, index=False)
 print(f"데이터가 {excel_path}로 추출되고 내보내졌습니다.")

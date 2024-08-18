@@ -1,15 +1,28 @@
 [
     {
         "market": "KRW-JST",
+        "candle_date_time_utc": "2024-08-17T16:30:00",
+        "candle_date_time_kst": "2024-08-18T01:30:00",
+        "opening_price": 39.26,
+        "high_price": 39.26,
+        "low_price": 39.2,
+        "trade_price": 39.2,
+        "timestamp": 1723912403509,
+        "candle_acc_trade_price": 149197.0026877,
+        "candle_acc_trade_volume": 3802.23445105,
+        "unit": 5
+    },
+    {
+        "market": "KRW-JST",
         "candle_date_time_utc": "2024-08-17T16:25:00",
         "candle_date_time_kst": "2024-08-18T01:25:00",
         "opening_price": 39.24,
-        "high_price": 39.25,
+        "high_price": 39.26,
         "low_price": 39.24,
-        "trade_price": 39.25,
-        "timestamp": 1723912030907,
-        "candle_acc_trade_price": 341076.00051816,
-        "candle_acc_trade_volume": 8689.95888109,
+        "trade_price": 39.26,
+        "timestamp": 1723912193511,
+        "candle_acc_trade_price": 1960466.2685731,
+        "candle_acc_trade_volume": 49951.44375745,
         "unit": 5
     },
     {
@@ -2588,15 +2601,15 @@
     },
     {
         "market": "KRW-JST",
-        "candle_date_time_utc": "2024-08-16T16:25:00",
-        "candle_date_time_kst": "2024-08-17T01:25:00",
-        "opening_price": 37.97,
-        "high_price": 38.08,
-        "low_price": 37.93,
-        "trade_price": 38.08,
-        "timestamp": 1723825757525,
-        "candle_acc_trade_price": 889424.51771392,
-        "candle_acc_trade_volume": 23430.56818872,
+        "candle_date_time_utc": "2024-08-17T16:40:00",
+        "candle_date_time_kst": "2024-08-18T01:40:00",
+        "opening_price": 39.12,
+        "high_price": 39.12,
+        "low_price": 39.12,
+        "trade_price": 39.12,
+        "timestamp": 1723913058693,
+        "candle_acc_trade_price": 464277.23712304,
+        "candle_acc_trade_volume": 11868.02753382,
         "unit": 5
     }
 ]

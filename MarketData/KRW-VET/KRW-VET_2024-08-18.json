@@ -1,6 +1,19 @@
 [
     {
         "market": "KRW-VET",
+        "candle_date_time_utc": "2024-08-17T16:35:00",
+        "candle_date_time_kst": "2024-08-18T01:35:00",
+        "opening_price": 31.06,
+        "high_price": 31.06,
+        "low_price": 31.06,
+        "trade_price": 31.06,
+        "timestamp": 1723912567962,
+        "candle_acc_trade_price": 99999.99999976,
+        "candle_acc_trade_volume": 3219.57501609,
+        "unit": 5
+    },
+    {
+        "market": "KRW-VET",
         "candle_date_time_utc": "2024-08-17T16:20:00",
         "candle_date_time_kst": "2024-08-18T01:20:00",
         "opening_price": 31.06,
@@ -2588,15 +2601,15 @@
     },
     {
         "market": "KRW-VET",
-        "candle_date_time_utc": "2024-08-16T21:40:00",
-        "candle_date_time_kst": "2024-08-17T06:40:00",
-        "opening_price": 30.77,
-        "high_price": 30.77,
-        "low_price": 30.77,
-        "trade_price": 30.77,
-        "timestamp": 1723844479358,
-        "candle_acc_trade_price": 170004.25,
-        "candle_acc_trade_volume": 5525.0,
+        "candle_date_time_utc": "2024-08-17T16:50:00",
+        "candle_date_time_kst": "2024-08-18T01:50:00",
+        "opening_price": 31.09,
+        "high_price": 31.09,
+        "low_price": 31.09,
+        "trade_price": 31.09,
+        "timestamp": 1723913447457,
+        "candle_acc_trade_price": 14984.99999999,
+        "candle_acc_trade_volume": 481.98777742,
         "unit": 5
     }
 ]

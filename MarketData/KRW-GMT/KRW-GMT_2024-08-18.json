@@ -1,6 +1,32 @@
 [
     {
         "market": "KRW-GMT",
+        "candle_date_time_utc": "2024-08-17T16:40:00",
+        "candle_date_time_kst": "2024-08-18T01:40:00",
+        "opening_price": 148.6,
+        "high_price": 148.6,
+        "low_price": 148.6,
+        "trade_price": 148.6,
+        "timestamp": 1723913007424,
+        "candle_acc_trade_price": 378454.68013448,
+        "candle_acc_trade_volume": 2546.8013468,
+        "unit": 5
+    },
+    {
+        "market": "KRW-GMT",
+        "candle_date_time_utc": "2024-08-17T16:30:00",
+        "candle_date_time_kst": "2024-08-18T01:30:00",
+        "opening_price": 149.0,
+        "high_price": 149.0,
+        "low_price": 148.5,
+        "trade_price": 148.5,
+        "timestamp": 1723912386934,
+        "candle_acc_trade_price": 4537345.18372873,
+        "candle_acc_trade_volume": 30507.9812892,
+        "unit": 5
+    },
+    {
+        "market": "KRW-GMT",
         "candle_date_time_utc": "2024-08-17T16:20:00",
         "candle_date_time_kst": "2024-08-18T01:20:00",
         "opening_price": 148.8,
@@ -2571,32 +2597,6 @@
         "timestamp": 1723845740905,
         "candle_acc_trade_price": 166960.43363046,
         "candle_acc_trade_volume": 1110.10926616,
-        "unit": 5
-    },
-    {
-        "market": "KRW-GMT",
-        "candle_date_time_utc": "2024-08-16T21:55:00",
-        "candle_date_time_kst": "2024-08-17T06:55:00",
-        "opening_price": 150.4,
-        "high_price": 150.4,
-        "low_price": 150.4,
-        "trade_price": 150.4,
-        "timestamp": 1723845468641,
-        "candle_acc_trade_price": 2489199.56773031,
-        "candle_acc_trade_volume": 16550.52904076,
-        "unit": 5
-    },
-    {
-        "market": "KRW-GMT",
-        "candle_date_time_utc": "2024-08-16T21:50:00",
-        "candle_date_time_kst": "2024-08-17T06:50:00",
-        "opening_price": 150.5,
-        "high_price": 150.6,
-        "low_price": 150.5,
-        "trade_price": 150.6,
-        "timestamp": 1723845118159,
-        "candle_acc_trade_price": 272687.776452,
-        "candle_acc_trade_volume": 1811.67242,
         "unit": 5
     }
 ]

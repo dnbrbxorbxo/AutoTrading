@@ -1,61 +1,13 @@
+import json
 import time
 from datetime import datetime
 
 import jwt
-import hashlib
 import os
-import requests
 import uuid
 import requests
-from urllib.parse import urlencode, unquote
-import sqlite3
-from peewee import SqliteDatabase, Model, CharField, IntegerField
 
 server_url = "https://api.upbit.com/"
-# 배열 정의
-TargetMarket = ["KRW-ETC" , "KRW-XRP" , "KRW-ETH"]
-
-
-MarketDB = SqliteDatabase('AutoTrading.db')
-# 모델 정의
-class Market(Model):
-    MarketKOR = CharField()
-    MarketID = CharField()
-    MarketENG = CharField()
-
-    MarketPrice = CharField()
-    MarketTime = CharField()
-
-    MarketHighPrice = CharField()
-    MarketLowPrice = CharField()
-
-    MarketRSI14 = CharField()
-    MarketRSI20 = CharField()
-    MarketRSI50 = CharField()
-    MarketRSI100 = CharField()
-
-    class Meta:
-        database = MarketDB
-
-class MarketRSI(Model):
-    MarketKOR = CharField()
-    MarketID = CharField()
-    MarketENG = CharField()
-
-    MarketRSI14 = CharField()
-    MarketRSI20 = CharField()
-    MarketRSI50 = CharField()
-    MarketRSI100 = CharField()
-
-    class Meta:
-        database = MarketDB
-
-# 데이터베이스 연결 (해당 파일이 없으면 새로 생성)
-MarketDB.connect()
-MarketDB.create_tables([Market , MarketRSI])
-
-print("데이터 베이스 연결")
-
 
 # UPBIT API 연동 키 값 설정
 def GetAuth():
@@ -81,7 +33,7 @@ def GetBalance(currency):
     params = {}
 
     res = requests.get(server_url + 'v1/accounts', params=params, headers=GetAuth())
-
+    print(res.json())
     for item in res.json():
         if item['currency'] == currency:
             return float(item['balance'])  # 'balance'를 float으로 변환하여 반환
@@ -98,75 +50,72 @@ def GetCoinList() :
         if "KRW" not in row["market"]:
             continue
 
-        if row["market"] in TargetMarket:
-            SetMarketStatus(row["market"] , row["korean_name"] , row["english_name"])
+        SetMarketStatus(row["market"] , row["korean_name"] , row["english_name"])
 
-def SetMarketStatus(MarketID , korean_name , english_name) :
+
+def SetMarketStatus(MarketID, korean_name, english_name):
     print("####################################################################################################")
-    MarketStatus = GetCoinTick(MarketID)[0]
+    print(f"종목 ID: {MarketID}, 한글 이름: {korean_name}, 영어 이름: {english_name}")
 
-    # RSI 계산을 위해 현재 시세 데이터 배열에 추가
-    MarketList_RSI = []
-    MarketList_RSI.append(float(MarketStatus["trade_price"]))
+    # URL to fetch the JSON data
+    url = f"https://api.upbit.com/v1/candles/minutes/1?market={MarketID}&count=1200"
+    print(f"데이터를 가져올 URL: {url}")
 
-    RSI14 = CalcRSI(MarketID , MarketList_RSI , 14)
-    RSI20 = CalcRSI(MarketID , MarketList_RSI , 20)
-    RSI50 = CalcRSI(MarketID , MarketList_RSI , 50)
-    RSI100 = CalcRSI(MarketID , MarketList_RSI , 100)
+    # Fetch the JSON data from the URL
+    response = requests.get(url)
+    print("데이터를 요청 중입니다...")
 
+    # Check if the request was successful
+    if response.status_code == 200:
+        print("데이터 요청 성공!")
 
-    MarketData = {
-        "MarketKOR": korean_name,
-        "MarketID": MarketID,
-        "MarketENG": english_name,
+        # Parse the JSON data
+        new_data = response.json()
 
-        "MarketPrice": MarketStatus["trade_price"],
-        "MarketTime": TimeStampToDate(MarketStatus["trade_timestamp"]),
+        # Create the folder path based on the market ID
+        folder_path = f"./MarketData/{MarketID}"
+        print(f"폴더 경로: {folder_path}")
 
-        "MarketHighPrice": MarketStatus["high_price"],
-        "MarketLowPrice": MarketStatus["low_price"],
+        # Create the folder if it doesn't exist
+        os.makedirs(folder_path, exist_ok=True)
+        print("폴더가 존재하지 않으면 새로 만듭니다.")
 
-        "MarketRSI14": RSI14,
-        "MarketRSI20": RSI20,
-        "MarketRSI50": RSI50,
-        "MarketRSI100": RSI100
-    }
-    print(MarketData)
-    Market.create(**MarketData)
+        # Get the current date for the filename
+        current_date = datetime.now().strftime("%Y-%m-%d")
 
-    # 새로운 데이터를 삽입
-    query = MarketRSI.delete().where(MarketRSI.MarketID == MarketID)
-    query.execute()
-    MarketRSIData = {
-        "MarketKOR": korean_name,
-        "MarketID": MarketID,
-        "MarketENG": english_name,
+        # Define the filename based on the market ID and the current date
+        filename = f"{folder_path}/{MarketID}_{current_date}.json"
+        print(f"저장할 파일 이름: {filename}")
 
-        "MarketRSI14": RSI14,
-        "MarketRSI20": RSI20,
-        "MarketRSI50": RSI50,
-        "MarketRSI100": RSI100
-    }
-    print(MarketRSIData)
-    MarketRSI.create(**MarketRSIData)
+        # Load existing data if the file exists
+        if os.path.exists(filename):
+            with open(filename, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+            print("기존 데이터를 불러왔습니다.")
+        else:
+            existing_data = []
+            print("기존 데이터가 없습니다. 새로운 파일을 생성합니다.")
 
-    print("####################################################################################################")
+        # Filter out duplicate data
+        existing_timestamps = {entry['timestamp'] for entry in existing_data}
+        unique_new_data = [entry for entry in new_data if entry['timestamp'] not in existing_timestamps]
 
-    # 0.1 초 동안 대기 , too many request를 피하기 위함
-    time.sleep(0.5)
+        if unique_new_data:
+            # Append new unique data to the existing data
+            updated_data = existing_data + unique_new_data
 
+            # Save the updated JSON data to the file
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(updated_data, f, ensure_ascii=False, indent=4)
 
-def GetCoinTick(CoinID) :
-    import requests
+            print(f"새로운 데이터가 {filename}에 성공적으로 업데이트되었습니다.")
+        else:
+            print("추가할 새로운 데이터가 없습니다.")
 
-    url = "https://api.upbit.com/v1/ticker?markets="+CoinID
+        time.sleep(0.2)
 
-    headers = {"accept": "application/json"}
-
-    response = requests.get(url, headers=headers)
-    return response.json()
-
-
+    else:
+        print(f"데이터 요청 실패! 상태 코드: {response.status_code}")
 def TimeStampToDate(timestamp ) :
     # 타임스탬프를 밀리초 단위에서 초 단위로 변환
     timestamp_seconds = timestamp / 1000

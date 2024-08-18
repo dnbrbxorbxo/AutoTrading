@@ -1,6 +1,19 @@
 [
     {
         "market": "KRW-META",
+        "candle_date_time_utc": "2024-08-17T16:35:00",
+        "candle_date_time_kst": "2024-08-18T01:35:00",
+        "opening_price": 34.21,
+        "high_price": 34.21,
+        "low_price": 34.21,
+        "trade_price": 34.21,
+        "timestamp": 1723912534767,
+        "candle_acc_trade_price": 9999.99999972,
+        "candle_acc_trade_volume": 292.31218941,
+        "unit": 5
+    },
+    {
+        "market": "KRW-META",
         "candle_date_time_utc": "2024-08-17T16:20:00",
         "candle_date_time_kst": "2024-08-18T01:20:00",
         "opening_price": 34.21,
@@ -2588,15 +2601,15 @@
     },
     {
         "market": "KRW-META",
-        "candle_date_time_utc": "2024-08-16T17:20:00",
-        "candle_date_time_kst": "2024-08-17T02:20:00",
-        "opening_price": 34.54,
-        "high_price": 34.54,
-        "low_price": 34.33,
-        "trade_price": 34.33,
-        "timestamp": 1723829085033,
-        "candle_acc_trade_price": 4510626.2918888,
-        "candle_acc_trade_volume": 131389.33614752,
+        "candle_date_time_utc": "2024-08-17T16:40:00",
+        "candle_date_time_kst": "2024-08-18T01:40:00",
+        "opening_price": 34.21,
+        "high_price": 34.21,
+        "low_price": 34.21,
+        "trade_price": 34.21,
+        "timestamp": 1723912964349,
+        "candle_acc_trade_price": 999999.99999967,
+        "candle_acc_trade_volume": 29231.21894182,
         "unit": 5
     }
 ]
