@@ -58,6 +58,363 @@
 
     </style>
 
+    <script type="text/javascript">
+        // ECharts 초기 설정
+        var chartDom = document.getElementById('main_chart');
+        var option;
+
+        // AJAX를 사용해 백엔드에서 데이터 가져오기
+        function fetchData() {
+            $.ajax({
+                url: '/get_data',
+                method: 'GET',
+                data: {
+                    symbol: 'BTCUSDT',
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        var data = response.data;
+                        var lrl120 = response.lrl_120;
+                        var lrl240 = response.lrl_240;
+                        var lrl480 = response.lrl_480;
+                        var lrl640 = response.lrl_640;
+                        var lrl1200 = response.lrl_1200;
+
+                        var lrv_poly = response.lrv_poly;
+
+                        var slope120 = response.slope_120;
+                        var slope240 = response.slope_240;
+                        var slope480 = response.slope_480;
+                        var slope640 = response.slope_640;
+                        var slope1200 = response.slope_1200;
+
+                        if (data.length === 0) {
+                            console.error('No data available');
+                            return;
+                        }
+
+                        // ECharts가 요구하는 형식으로 데이터 변환
+                        var chartData = data.map(function (item) {
+                            return [
+                                item.open_time,
+                                parseFloat(item.open),
+                                parseFloat(item.close),
+                                parseFloat(item.low),
+                                parseFloat(item.high)
+                            ];
+                        });
+
+                        // 가장 최근 갱신일을 추출
+                        var lastUpdate = data[data.length - 1].open_time;
+                        $("#last_update").text(lastUpdate + " 갱신");
+
+                        console.log(chartData);
+
+                        // ECharts 옵션 설정
+                        var option = {
+                            title: {
+                                text: 'BTC/USDT Candlestick Chart with LRL and Slope'
+                            },
+                            tooltip: {
+                                trigger: 'axis',
+                                axisPointer: {
+                                    type: 'cross'
+                                }
+                            },
+                            legend: {
+                                data: ['BTC/USDT',
+                                    'LRL 120', 'LRL 240', 'LRL 480', 'LRL 640', 'LRL 1200',
+                                    'LRV POLY',
+                                    'Slope 120', 'Slope 240', 'Slope 480', 'Slope 640', 'Slope 1200'
+                                ],
+                                top: 10,
+                                left: 'center'
+                            },
+                            xAxis: {
+                                type: 'category',
+                                data: chartData.map(function (item) {
+                                    return item[0];
+                                }),
+                                scale: true,
+                                boundaryGap: false,
+                                axisLine: {onZero: false},
+                                splitLine: {show: false},
+                                min: 'dataMin',
+                                max: 'dataMax'
+                            },
+                            yAxis: [
+                                {
+                                    type: 'value',
+                                    scale: true,
+                                    splitArea: {
+                                        show: true
+                                    }
+                                },
+                                {
+                                    type: 'value',
+                                    scale: true,
+                                    splitArea: {
+                                        show: true
+                                    },
+                                    min: -1,
+                                    max: 1,
+                                    interval: 1,
+                                    axisLabel: {
+                                        formatter: function (value) {
+                                            return value === 1 ? 'Positive' : 'Negative';
+                                        }
+                                    }
+                                }
+                            ],
+                            dataZoom: [
+                                {
+                                    type: 'inside',
+                                    start: 50,
+                                    end: 100
+                                },
+                                {
+                                    show: true,
+                                    type: 'slider',
+                                    top: '90%',
+                                    start: 50,
+                                    end: 100
+                                }
+                            ],
+                            series: [
+                                {
+                                    name: 'BTC/USDT',
+                                    type: 'candlestick',
+                                    data: chartData.map(function (item) {
+                                        return [item[1], item[2], item[3], item[4]];
+                                    }),
+                                    itemStyle: {
+                                        color: '#ef232a',
+                                        color0: '#14b143',
+                                        borderColor: '#ef232a',
+                                        borderColor0: '#14b143'
+                                    },
+                                    zlevel: 1  // 최상위 레벨에 위치하도록 설정
+                                },
+                                {
+                                    name: 'LRL 120',
+                                    type: 'line',
+                                    data: lrl120,
+                                    smooth: true,
+                                    lineStyle: {
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'LRL 240',
+                                    type: 'line',
+                                    data: lrl240,
+                                    smooth: true,
+                                    lineStyle: {
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'LRL 480',
+                                    type: 'line',
+                                    data: lrl480,
+                                    smooth: true,
+                                    lineStyle: {
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'LRL 640',
+                                    type: 'line',
+                                    data: lrl640,
+                                    smooth: true,
+                                    lineStyle: {
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'LRL 1200',
+                                    type: 'line',
+                                    data: lrl1200,
+                                    smooth: true,
+                                    lineStyle: {
+                                        width: 2,
+                                    }
+                                },
+
+                                {
+                                    name: 'LRV POLY',
+                                    type: 'line',
+                                    data: lrv_poly,
+                                    smooth: true,
+                                    lineStyle: {
+                                        width: 2,
+                                    }
+                                },
+
+                                // Slope 시리즈 추가 (양수 1, 음수 -1)
+                                {
+                                    name: 'Slope 120',
+                                    type: 'line',
+                                    yAxisIndex: 1,  // 두 번째 Y축 사용
+                                    data: slope120,
+                                    smooth: true,
+                                    lineStyle: {
+                                        type: 'dashed',
+                                        color: '#FF0000',
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'Slope 240',
+                                    type: 'line',
+                                    yAxisIndex: 1,  // 두 번째 Y축 사용
+                                    data: slope240,
+                                    smooth: true,
+                                    lineStyle: {
+                                        type: 'dashed',
+                                        color: '#FFA500',
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'Slope 480',
+                                    type: 'line',
+                                    yAxisIndex: 1,  // 두 번째 Y축 사용
+                                    data: slope480,
+                                    smooth: true,
+                                    lineStyle: {
+                                        type: 'dashed',
+                                        color: '#008000',
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'Slope 640',
+                                    type: 'line',
+                                    yAxisIndex: 1,  // 두 번째 Y축 사용
+                                    data: slope640,
+                                    smooth: true,
+                                    lineStyle: {
+                                        type: 'dashed',
+                                        color: '#0000FF',
+                                        width: 2,
+                                    }
+                                },
+                                {
+                                    name: 'Slope 1200',
+                                    type: 'line',
+                                    yAxisIndex: 1,  // 두 번째 Y축 사용
+                                    data: slope1200,
+                                    smooth: true,
+                                    lineStyle: {
+                                        type: 'dashed',
+                                        color: '#800080',
+                                        width: 2,
+                                    }
+                                }
+                            ]
+                        };
+                        // ECharts 인스턴스 초기화 및 옵션 설정
+                        var myChart = echarts.init(document.getElementById('main_chart'));
+                        myChart.setOption(option);
+                    } else {
+                        console.error('Failed to fetch data:', response.message);
+                    }
+                },
+                error: function (error) {
+                    console.error('Error fetching data:', error);
+                }
+
+
+            });
+
+            $.ajax({
+                url: '/GetTradingSimulate',
+                method: 'GET',
+                data: {
+                    symbol: 'BTCUSDT',
+                },
+                success: function (response) {
+                      // 콘솔에 전체 응답 데이터 출력
+                        console.log(response);
+                        $("#TradingReport").html("");
+                        // 데이터를 기반으로 테이블 생성
+                        for (let key in response) {
+                            if (response.hasOwnProperty(key)) {
+                                createTable(key, response[key]);
+                            }
+                        }
+                },
+                error: function (error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
+
+        function createTable(tableName, data) {
+            let TableRows = "";
+            let no = 1;
+            for (let item of data){
+                console.log(item);
+                if(!item["profit"]){
+                    item["profit"] = "-";
+                }
+                TableRows += `
+                    <tr>
+                        <td >`+no+`</td>
+                        <td >`+item["포지션"]+`</td>
+                        <td >`+item["진입 날짜"]+`</td>
+                        <td >`+item["진입 가격"]+`</td>
+                        <td >`+item["정산 날짜"]+`</td>
+                        <td >`+item["정산 가격"]+`</td>
+                        <td >`+item["수익률"]+`</td>
+                      </tr>
+                `;
+                no++;
+            }
+
+            let TableHTML = `
+
+
+
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">지표 시뮬레이션 - `+tableName+`</h5>
+                            <table class="table table-striped">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">순서</th>
+                                    <th scope="col">포지션</th>
+                                    <th scope="col">진입 날짜</th>
+                                    <th scope="col">진입 가격</th>
+                                    <th scope="col">정산 날짜</th>
+                                    <th scope="col">정산 가격</th>
+                                    <th scope="col">수익률</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    `+TableRows+`
+                                </tbody>
+                              </table>
+                        </div>
+                    </div>
+                </div>
+
+            `;
+            $("#TradingReport").append(TableHTML);
+        }
+
+        $(document).ready(function () {
+            // 페이지 로드 시 첫 데이터 가져오기
+            fetchData();
+
+            // 10초마다 데이터를 갱신
+            // setInterval(fetchData, 10);
+        })
+
+    </script>
+
 </head>
 
 <body>
@@ -68,7 +425,7 @@
     <div class="d-flex align-items-center justify-content-between">
         <a href="/main" class="logo d-flex align-items-center">
             <img src="static/img/logo.png" alt="">
-            <span class="d-none d-lg-block">UPBIT 자동 매매</span>
+            <span class="d-none d-lg-block">BINANCE 선물</span>
         </a>
         <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
@@ -152,184 +509,18 @@
                     <div class="card-body">
                         <h5 class="card-title"> 비트코인 선물 차트 <span class="badge rounded-pill bg-success" style="color:white;" id ="last_update">갱신</span></h5>
                         <div id="main_chart" style="width: 100%; height: 600px;"></div>
-                        <script type="text/javascript">
-                            // ECharts 초기 설정
-                            var chartDom = document.getElementById('main_chart');
-                            var myChart = echarts.init(chartDom);
-                            var option;
 
-                            // AJAX를 사용해 백엔드에서 데이터 가져오기
-                            function fetchData() {
-                                $.ajax({
-                                    url: '/get_data',
-                                    method: 'GET',
-                                    data: {
-                                        symbol: 'BTCUSDT',
-                                    },
-                                    success: function(response) {
-                                        if (response.status === 'success') {
-                                            var data = response.data;
-                                            var data = response.data;
-                                            var lrl120 = response.lrl_120;
-                                            var lrl240 = response.lrl_240;
-                                            var lrl480 = response.lrl_480;
-                                            var lrl640 = response.lrl_640;
-                                            var lrl1200 = response.lrl_1200;
-
-                                            if (data.length === 0) {
-                                                console.error('No data available');
-                                                return;
-                                            }
-
-                                            // ECharts가 요구하는 형식으로 데이터 변환
-                                            var chartData = data.map(function(item) {
-                                                return [
-                                                    item.open_time,
-                                                    parseFloat(item.open),
-                                                    parseFloat(item.close),
-                                                    parseFloat(item.low),
-                                                    parseFloat(item.high)
-                                                ];
-                                            });
-
-                                            // 가장 최근 갱신일을 추출
-                                            var lastUpdate = data[data.length - 1].open_time;
-                                            $("#last_update").text(lastUpdate+" 갱신");
-
-                                            console.log(chartData);
-
-                                            // ECharts 옵션 설정
-                                            // ECharts 옵션 설정
-                                            option = {
-                                                title: {
-                                                    text: 'BTC/USDT Candlestick Chart with LRL'
-                                                },
-                                                tooltip: {
-                                                    trigger: 'axis',
-                                                    axisPointer: {
-                                                        type: 'cross'
-                                                    }
-                                                },
-                                            legend: {
-                                                data: ['BTC/USDT', 'LRL 120', 'LRL 240', 'LRL 480', 'LRL 640', 'LRL 1200'],
-                                                top: 10,  // 레전드 위치 조정
-                                                left: 'center'  // 레전드 위치 조정
-                                            },
-                                                xAxis: {
-                                                    type: 'category',
-                                                    data: chartData.map(function(item) { return item[0]; }),
-                                                    scale: true,
-                                                    boundaryGap: false,
-                                                    axisLine: {onZero: false},
-                                                    splitLine: {show: false},
-                                                    min: 'dataMin',
-                                                    max: 'dataMax'
-                                                },
-                                                yAxis: {
-                                                    scale: true,
-                                                    splitArea: {
-                                                        show: true
-                                                    }
-                                                },
-                                                dataZoom: [
-                                                    {
-                                                        type: 'inside',
-                                                        start: 50,
-                                                        end: 100
-                                                    },
-                                                    {
-                                                        show: true,
-                                                        type: 'slider',
-                                                        top: '90%',
-                                                        start: 50,
-                                                        end: 100
-                                                    }
-                                                ],
-                                                series: [
-                                                    {
-                                                        name: 'BTC/USDT',
-                                                        type: 'candlestick',
-                                                        data: chartData.map(function(item) {
-                                                            return [item[1], item[2], item[3], item[4]];
-                                                        }),
-                                                        itemStyle: {
-                                                            color: '#ef232a',
-                                                            color0: '#14b143',
-                                                            borderColor: '#ef232a',
-                                                            borderColor0: '#14b143'
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'LRL 120',
-                                                        type: 'line',
-                                                        data: lrl120,
-                                                        smooth: true,
-                                                        lineStyle: {
-                                                            width: 2,
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'LRL 240',
-                                                        type: 'line',
-                                                        data: lrl240,
-                                                        smooth: true,
-                                                        lineStyle: {
-                                                            width: 2,
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'LRL 480',
-                                                        type: 'line',
-                                                        data: lrl480,
-                                                        smooth: true,
-                                                        lineStyle: {
-                                                            width: 2,
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'LRL 640',
-                                                        type: 'line',
-                                                        data: lrl640,
-                                                        smooth: true,
-                                                        lineStyle: {
-                                                            width: 2,
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'LRL 1200',
-                                                        type: 'line',
-                                                        data: lrl1200,
-                                                        smooth: true,
-                                                        lineStyle: {
-                                                            width: 2,
-                                                        }
-                                                    }
-                                                ]
-                                            };
-                                            myChart.setOption(option);
-                                        } else {
-                                            console.error('Failed to fetch data:', response.message);
-                                        }
-                                    },
-                                    error: function(error) {
-                                        console.error('Error fetching data:', error);
-                                    }
-                                });
-                            }
-
-                            // 페이지 로드 시 첫 데이터 가져오기
-                            fetchData();
-
-                            // 10초마다 데이터를 갱신
-                            setInterval(fetchData, 10000);
-                        </script>
 
                     </div>
                 </div>
 
             </div>
-            <!-- End Right side columns -->
 
+            <div id="TradingReport" class="row">
+
+
+            <!-- End Right side columns -->
+            </div>
 
         </div>
     </section>
