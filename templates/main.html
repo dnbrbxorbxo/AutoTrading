@@ -63,6 +63,19 @@
         var chartDom = document.getElementById('main_chart');
         var option;
 
+        // 현재 시간 추출
+        function getCurrentTime() {
+            var now = new Date();
+            var year = now.getFullYear();
+            var month = String(now.getMonth() + 1).padStart(2, '0');  // 월은 0부터 시작하므로 +1
+            var day = String(now.getDate()).padStart(2, '0');
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            var seconds = String(now.getSeconds()).padStart(2, '0');
+
+            return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+        }
+
         // AJAX를 사용해 백엔드에서 데이터 가져오기
         function fetchData() {
             $.ajax({
@@ -74,19 +87,13 @@
                 success: function (response) {
                     if (response.status === 'success') {
                         var data = response.data;
+                        var lrl = response.lrl;
                         var lrl120 = response.lrl_120;
                         var lrl240 = response.lrl_240;
-                        var lrl480 = response.lrl_480;
-                        var lrl640 = response.lrl_640;
-                        var lrl1200 = response.lrl_1200;
 
                         var lrv_poly = response.lrv_poly;
-
-                        var slope120 = response.slope_120;
-                        var slope240 = response.slope_240;
-                        var slope480 = response.slope_480;
-                        var slope640 = response.slope_640;
-                        var slope1200 = response.slope_1200;
+                        var lrv_poly_120 = response.lrv_poly_120;
+                        var lrv_poly_240 = response.lrv_poly_240;
 
                         if (data.length === 0) {
                             console.error('No data available');
@@ -104,16 +111,16 @@
                             ];
                         });
 
-                        // 가장 최근 갱신일을 추출
-                        var lastUpdate = data[data.length - 1].open_time;
-                        $("#last_update").text(lastUpdate + " 갱신");
+                        // 현재 시간 표시
+                        var currentTime = getCurrentTime();
+                        $("#last_update").text(currentTime + " 갱신");
 
                         console.log(chartData);
 
                         // ECharts 옵션 설정
                         var option = {
                             title: {
-                                text: 'BTC/USDT Candlestick Chart with LRL and Slope'
+                                text: 'BTC/USDT'
                             },
                             tooltip: {
                                 trigger: 'axis',
@@ -123,9 +130,9 @@
                             },
                             legend: {
                                 data: ['BTC/USDT',
-                                    'LRL 120', 'LRL 240', 'LRL 480', 'LRL 640', 'LRL 1200',
-                                    'LRV POLY',
-                                    'Slope 120', 'Slope 240', 'Slope 480', 'Slope 640', 'Slope 1200'
+                                    'LRL 100', 'LRL 100',
+                                    'LRL 120', 'LRL 240',
+                                    'LRV POLY 120',  'LRV POLY 240'
                                 ],
                                 top: 10,
                                 left: 'center'
@@ -169,7 +176,7 @@
                             dataZoom: [
                                 {
                                     type: 'inside',
-                                    start: 50,
+                                    start: 70,
                                     end: 100
                                 },
                                 {
@@ -202,7 +209,8 @@
                                     smooth: true,
                                     lineStyle: {
                                         width: 2,
-                                    }
+                                    },
+                                    showSymbol: false  // 점을 숨김
                                 },
                                 {
                                     name: 'LRL 240',
@@ -211,107 +219,31 @@
                                     smooth: true,
                                     lineStyle: {
                                         width: 2,
-                                    }
+                                    },
+                                    showSymbol: false  // 점을 숨김
                                 },
                                 {
-                                    name: 'LRL 480',
+                                    name: 'LRV POLY 120',
                                     type: 'line',
-                                    data: lrl480,
+                                    data: lrv_poly_120,
                                     smooth: true,
                                     lineStyle: {
                                         width: 2,
-                                    }
-                                },
-                                {
-                                    name: 'LRL 640',
-                                    type: 'line',
-                                    data: lrl640,
-                                    smooth: true,
-                                    lineStyle: {
-                                        width: 2,
-                                    }
-                                },
-                                {
-                                    name: 'LRL 1200',
-                                    type: 'line',
-                                    data: lrl1200,
-                                    smooth: true,
-                                    lineStyle: {
-                                        width: 2,
-                                    }
+                                    },
+                                    showSymbol: false  // 점을 숨김
                                 },
 
                                 {
-                                    name: 'LRV POLY',
+                                    name: 'LRV POLY 240',
                                     type: 'line',
-                                    data: lrv_poly,
+                                    data: lrv_poly_240,
                                     smooth: true,
                                     lineStyle: {
                                         width: 2,
-                                    }
+                                    },
+                                    showSymbol: false  // 점을 숨김
                                 },
 
-                                // Slope 시리즈 추가 (양수 1, 음수 -1)
-                                {
-                                    name: 'Slope 120',
-                                    type: 'line',
-                                    yAxisIndex: 1,  // 두 번째 Y축 사용
-                                    data: slope120,
-                                    smooth: true,
-                                    lineStyle: {
-                                        type: 'dashed',
-                                        color: '#FF0000',
-                                        width: 2,
-                                    }
-                                },
-                                {
-                                    name: 'Slope 240',
-                                    type: 'line',
-                                    yAxisIndex: 1,  // 두 번째 Y축 사용
-                                    data: slope240,
-                                    smooth: true,
-                                    lineStyle: {
-                                        type: 'dashed',
-                                        color: '#FFA500',
-                                        width: 2,
-                                    }
-                                },
-                                {
-                                    name: 'Slope 480',
-                                    type: 'line',
-                                    yAxisIndex: 1,  // 두 번째 Y축 사용
-                                    data: slope480,
-                                    smooth: true,
-                                    lineStyle: {
-                                        type: 'dashed',
-                                        color: '#008000',
-                                        width: 2,
-                                    }
-                                },
-                                {
-                                    name: 'Slope 640',
-                                    type: 'line',
-                                    yAxisIndex: 1,  // 두 번째 Y축 사용
-                                    data: slope640,
-                                    smooth: true,
-                                    lineStyle: {
-                                        type: 'dashed',
-                                        color: '#0000FF',
-                                        width: 2,
-                                    }
-                                },
-                                {
-                                    name: 'Slope 1200',
-                                    type: 'line',
-                                    yAxisIndex: 1,  // 두 번째 Y축 사용
-                                    data: slope1200,
-                                    smooth: true,
-                                    lineStyle: {
-                                        type: 'dashed',
-                                        color: '#800080',
-                                        width: 2,
-                                    }
-                                }
                             ]
                         };
                         // ECharts 인스턴스 초기화 및 옵션 설정
@@ -329,7 +261,7 @@
             });
 
             $.ajax({
-                url: '/GetTradingSimulate',
+                url: '/GetTradingLog',
                 method: 'GET',
                 data: {
                     symbol: 'BTCUSDT',
@@ -354,6 +286,7 @@
         function createTable(tableName, data) {
             let TableRows = "";
             let no = 1;
+            let totalFit = 0;
             for (let item of data){
                 console.log(item);
                 if(!item["profit"]){
@@ -370,27 +303,37 @@
                         <td >`+item["수익률"]+`</td>
                       </tr>
                 `;
+                totalFit += parseFloat(item["수익률"]); // 수익률을 합산
                 no++;
             }
+            totalFit =  Math.round(totalFit * 1000) / 1000;
+            TableRows += `
+                <tr>
+                    <td ></td>
+                    <td ></td>
+                    <td >총 `+no+`건 거래</td>
+                    <td ></td>
+                    <td ></td>
+                    <td ></td>
+                    <td >`+totalFit+`</td>
+                  </tr>
+            `;
 
             let TableHTML = `
-
-
-
                 <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">지표 시뮬레이션 - `+tableName+`</h5>
-                            <table class="table table-striped">
+                            <h5 class="card-title">거래내역 - `+tableName+` (24시간 이내)</h5>
+                            <table class="table table-striped" >
                                 <thead>
                                   <tr>
-                                    <th scope="col">순서</th>
+                                    <th scope="col">#</th>
                                     <th scope="col">포지션</th>
                                     <th scope="col">진입 날짜</th>
-                                    <th scope="col">진입 가격</th>
+                                    <th scope="col">가격</th>
                                     <th scope="col">정산 날짜</th>
-                                    <th scope="col">정산 가격</th>
-                                    <th scope="col">수익률</th>
+                                    <th scope="col">가격</th>
+                                    <th scope="col">수익</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -404,13 +347,101 @@
             `;
             $("#TradingReport").append(TableHTML);
         }
+        function fetchTradeLogs() {
+            $.ajax({
+                url: '/get_trade_logs',
+                method: 'GET',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        var logs = response.data;
+                        var LogRows = "";
+                        var no = 1;
+                        logs.forEach(function(log) {
+                            LogRows += `
+                                <tr>
+                                    <td >${no}</td>
+                                    <td style="width: 20%;">${log.timestamp}</td>
+                                    <td >${log.message}</td>
+                                  </tr>
+                            `;
+                            no++;
+                        });
+
+                        let LogHTML = `
+                        <div class="col-lg-6" id ="LogCard">
+                            <div class="card" >
+                                <div class="card-body">
+                                    <h5 class="card-title">봇 로그</h5>
+                                    <table class="table datatables" >
+                                        <thead>
+                                          <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">시간</th>
+                                            <th scope="col">메시지</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                            `+LogRows+`
+                                        </tbody>
+                                      </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    `;
+
+                        $("#LogCard").remove();
+                        $("#TradingReport").append(LogHTML);
+                    } else {
+                        console.error('Failed to fetch data:', response.message);
+                    }
+                },
+                error: function(error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
 
         $(document).ready(function () {
             // 페이지 로드 시 첫 데이터 가져오기
             fetchData();
+            fetchTradeLogs();
+
+
+            $(".TradingButton").on("click" , function(){
+               let status = $(this).attr("data-trade") ;
+               if(status == "시작"){
+                    $.ajax({
+                        url: '/start_bot',
+                        method: 'POST',
+                        success: function(response) {
+                            alert(response.status);
+                        },
+                        error: function(error) {
+                            alert('Error starting bot');
+                            console.error('Error starting bot:', error);
+                        }
+                    });
+               }else{
+                    $.ajax({
+                        url: '/stop_bot',
+                        method: 'POST',
+                        success: function(response) {
+                            alert(response.status);
+                        },
+                        error: function(error) {
+                            alert('Error stopping bot');
+                            console.error('Error stopping bot:', error);
+                        }
+                    });
+               }
+            });
 
             // 10초마다 데이터를 갱신
             setInterval(fetchData, 10000);
+
+            // 1초마다 fetchTradeLogs 함수 호출
+            setInterval(fetchTradeLogs, 1000);
         })
 
     </script>
@@ -504,13 +535,35 @@
         <div class="row">
 
             <!-- Right side columns -->
+            <div class="row">
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title"> 비트코인 선물 차트 <span class="badge rounded-pill bg-success" style="color:white;" id ="last_update">갱신</span></h5>
-                        <div id="main_chart" style="width: 100%; height: 600px;"></div>
+                        <h5 class="card-title"> 거래설정 <span class="badge rounded-pill bg-success" style="color:white;" id ="last_update">갱신</span></h5>
+                        <div class="row" style="">
 
+                            <div class="col-lg-6">
+                                <button type="button" class="btn btn-success TradingButton" style="width: 100%;"  data-trade = "시작">자동 매매 시작</button>
 
+                            </div>
+                            <div class="col-lg-6">
+                                <button type="button" class="btn btn-danger TradingButton" style="width: 100%;" data-trade = "종료">자동 매매 종료</button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"> 비트코인 선물 차트</h5>
+
+                            <div id="main_chart" style="width: 100%; height: 600px;"></div>
+                        </div>
                     </div>
                 </div>
 
